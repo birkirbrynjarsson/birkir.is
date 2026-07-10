@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>birkir.is</title>
+		<style>
+			:root {
+				color-scheme: light;
+				--background: #f7f4ee;
+				--text: #171717;
+				--muted: #6a6258;
+			}
+
+			* {
+				box-sizing: border-box;
+			}
+
+			body {
+				margin: 0;
+				min-height: 100vh;
+				display: grid;
+				place-items: center;
+				padding: 24px;
+				background: var(--background);
+				color: var(--text);
+				font-family: Georgia, "Times New Roman", serif;
+			}
+
+			main {
+				text-align: center;
+			}
+
+			h1 {
+				margin: 0 0 12px;
+				font-size: clamp(2.5rem, 8vw, 4.5rem);
+				font-weight: 600;
+				letter-spacing: 0.04em;
+			}
+
+			p {
+				margin: 0 0 28px;
+				color: var(--muted);
+				font-size: 1.05rem;
+			}
+
+			nav {
+				display: flex;
+				justify-content: center;
+				gap: 18px;
+				flex-wrap: wrap;
+			}
+
+			a {
+				color: inherit;
+				text-decoration: none;
+				border-bottom: 1px solid currentColor;
+				padding-bottom: 2px;
+			}
+
+			a:hover,
+			a:focus-visible {
+				color: var(--muted);
+			}
+		</style>
+	</head>
+	<body>
+		<main>
+			<h1>birkir.is</h1>
+			<p>Birkir Brynjarsson</p>
+			<nav aria-label="Social links">
+				<a href="https://cv.birkir.is" target="_blank" rel="noreferrer">CV</a>
+				<a href="https://instagram.com/birkrib" target="_blank" rel="noreferrer">Instagram</a>
+				<a href="https://www.linkedin.com/in/birkir-brynjarsson/" target="_blank" rel="noreferrer">LinkedIn</a>
+				<a href="https://github.com/birkirbrynjarsson" target="_blank" rel="noreferrer">GitHub</a>
+			</nav>
+		</main>
+	</body>
+</html>
