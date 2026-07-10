@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SeaThru API — Project Status</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue:    #0d6efd;
+      --green:   #198754;
+      --amber:   #fd7e14;
+      --red:     #dc3545;
+      --teal:    #0dcaf0;
+      --bg:      #f8f9fa;
+      --surface: #ffffff;
+      --border:  #dee2e6;
+      --text:    #212529;
+      --muted:   #6c757d;
+      --radius:  8px;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    /* ── Header ── */
+    header {
+      background: linear-gradient(135deg, #0a2e4e 0%, #0d5c8c 100%);
+      color: #fff;
+      padding: 40px 48px;
+    }
+    header .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    header .logo svg { width: 40px; height: 40px; flex-shrink: 0; }
+    header h1 { font-size: 2rem; font-weight: 700; letter-spacing: -0.5px; }
+    header .sub { font-size: 1rem; opacity: 0.75; margin-top: 4px; }
+    header .meta {
+      display: flex;
+      gap: 24px;
+      margin-top: 20px;
+      font-size: 0.875rem;
+      opacity: 0.85;
+    }
+    header .meta span::before { content: attr(data-label) ": "; font-weight: 600; }
+
+    /* ── Layout ── */
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 40px 24px 80px;
+    }
+
+    /* ── Section titles ── */
+    h2 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #0a2e4e;
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 8px;
+      margin: 40px 0 20px;
+    }
+    h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 10px;
+      color: var(--text);
+    }
+
+    /* ── KPI cards ── */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+    }
+    .kpi {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      text-align: center;
+    }
+    .kpi .value {
+      font-size: 2.25rem;
+      font-weight: 800;
+      color: var(--blue);
+      line-height: 1;
+    }
+    .kpi .label { font-size: 0.8rem; color: var(--muted); margin-top: 6px; }
+    .kpi.green .value { color: var(--green); }
+    .kpi.amber .value { color: var(--amber); }
+
+    /* ── Status badge ── */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .badge.done    { background: #d1e7dd; color: #0a3622; }
+    .badge.in-prog { background: #fff3cd; color: #664d03; }
+    .badge.planned { background: #e2e3e5; color: #41464b; }
+    .badge.blocked { background: #f8d7da; color: #58151c; }
+
+    /* ── Progress bar ── */
+    .progress-wrap { background: #e9ecef; border-radius: 4px; height: 8px; overflow: hidden; }
+    .progress-bar  { height: 100%; border-radius: 4px; background: var(--green); }
+
+    /* ── Cards / panels ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px 24px;
+      margin-bottom: 16px;
+    }
+
+    /* ── Feature list ── */
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 16px;
+    }
+    .feature-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+    }
+    .feature-item .icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 1rem;
+    }
+    .feature-item .icon.done    { background: #d1e7dd; }
+    .feature-item .icon.pending { background: #fff3cd; }
+    .feature-item .text h4 { font-size: 0.9rem; font-weight: 600; }
+    .feature-item .text p  { font-size: 0.8rem; color: var(--muted); margin-top: 2px; }
+
+    /* ── Endpoint table ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.875rem;
+      background: var(--surface);
+      border-radius: var(--radius);
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    thead th {
+      background: #f1f3f5;
+      padding: 10px 14px;
+      text-align: left;
+      font-weight: 600;
+      border-bottom: 1px solid var(--border);
+    }
+    tbody td {
+      padding: 9px 14px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover { background: #fafafa; }
+
+    code {
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-size: 0.82em;
+      background: #f1f3f5;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    .method {
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 4px;
+      white-space: nowrap;
+    }
+    .method.GET  { background: #cff4fc; color: #055160; }
+    .method.POST { background: #d1e7dd; color: #0a3622; }
+
+    /* ── GDST CTE grid ── */
+    .cte-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 10px;
+    }
+    .cte-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 14px;
+      font-size: 0.85rem;
+    }
+    .cte-item strong { display: block; font-size: 0.9rem; margin-bottom: 4px; }
+    .cte-item span   { font-size: 0.75rem; color: var(--muted); }
+
+    /* ── Timeline ── */
+    .timeline { position: relative; padding-left: 28px; }
+    .timeline::before {
+      content: "";
+      position: absolute;
+      left: 8px;
+      top: 4px;
+      bottom: 4px;
+      width: 2px;
+      background: var(--border);
+    }
+    .tl-item {
+      position: relative;
+      margin-bottom: 20px;
+    }
+    .tl-item::before {
+      content: "";
+      position: absolute;
+      left: -24px;
+      top: 5px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--green);
+      border: 2px solid #fff;
+      outline: 2px solid var(--green);
+    }
+    .tl-item .date { font-size: 0.78rem; color: var(--muted); font-weight: 600; }
+    .tl-item .desc { font-size: 0.9rem; margin-top: 2px; }
+
+    /* ── Tech stack pills ── */
+    .tech-pills { display: flex; flex-wrap: wrap; gap: 8px; }
+    .pill {
+      background: #e7f1ff;
+      color: #084298;
+      border: 1px solid #b6d4fe;
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 0.8rem;
+      font-weight: 500;
+    }
+
+    /* ── CI status ── */
+    .ci-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 10px;
+    }
+    .ci-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px;
+      text-align: center;
+    }
+    .ci-item .ci-icon { font-size: 1.4rem; }
+    .ci-item .ci-label { font-size: 0.8rem; font-weight: 600; margin-top: 4px; }
+    .ci-item .ci-cmd   { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
+
+    /* ── Schema table ── */
+    .schema-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 10px;
+    }
+    .schema-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 14px;
+      font-size: 0.82rem;
+    }
+    .schema-item strong { font-size: 0.88rem; display: block; margin-bottom: 3px; color: #0a2e4e; }
+
+    /* ── Next steps ── */
+    .next-list { list-style: none; }
+    .next-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.9rem;
+    }
+    .next-list li:last-child { border-bottom: none; }
+    .next-list li .num {
+      flex-shrink: 0;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #e7f1ff;
+      color: var(--blue);
+      font-size: 0.75rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 2px;
+    }
+
+    @media (max-width: 600px) {
+      header { padding: 24px 20px; }
+      header h1 { font-size: 1.5rem; }
+      header .meta { flex-direction: column; gap: 6px; }
+      main { padding: 24px 16px 60px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="20" cy="20" r="20" fill="rgba(255,255,255,0.15)"/>
+      <path d="M8 22c4-6 12-8 18-4" stroke="#7dd3fc" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M6 26c5-8 16-10 22-4" stroke="#38bdf8" stroke-width="2" stroke-linecap="round"/>
+      <ellipse cx="26" cy="19" rx="7" ry="4.5" fill="#7dd3fc" opacity=".8"/>
+      <circle cx="24" cy="18" r="1.2" fill="#0a2e4e"/>
+      <path d="M33 19l2.5-2.5" stroke="#7dd3fc" stroke-width="2" stroke-linecap="round"/>
+      <path d="M33 19l2.5 2.5" stroke="#7dd3fc" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+    <h1>SeaThru API</h1>
+  </div>
+  <div class="sub">GDST 1.2 Seafood Supply Chain Traceability — Project Status Report</div>
+  <div class="meta">
+    <span data-label="Date">30 May 2026</span>
+    <span data-label="Standard">GDST 1.2 Core Normative</span>
+    <span data-label="Branch">main</span>
+    <span data-label="Status">Active Development</span>
+  </div>
+</header>
+
+<main>
+
+  <!-- KPIs -->
+  <h2>At a Glance</h2>
+  <div class="kpi-grid">
+    <div class="kpi">
+      <div class="value">15</div>
+      <div class="label">API Endpoints Live</div>
+    </div>
+    <div class="kpi green">
+      <div class="value">~30</div>
+      <div class="label">Total Commits</div>
+    </div>
+    <div class="kpi">
+      <div class="value">14</div>
+      <div class="label">GDST CTEs Supported</div>
+    </div>
+    <div class="kpi green">
+      <div class="value">6</div>
+      <div class="label">CI/CD Checks Passing</div>
+    </div>
+    <div class="kpi">
+      <div class="value">20+</div>
+      <div class="label">Database Tables</div>
+    </div>
+    <div class="kpi green">
+      <div class="value">~95%</div>
+      <div class="label">GDST Compliance</div>
+    </div>
+  </div>
+
+  <!-- Overall progress -->
+  <h2>Overall Progress</h2>
+  <div class="card">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px;">
+      <h3 style="margin:0">Core Backend &amp; API</h3>
+      <span class="badge done">On Track</span>
+    </div>
+    <div class="progress-wrap"><div class="progress-bar" style="width:95%"></div></div>
+    <p style="font-size:0.82rem; color:var(--muted); margin-top: 8px;">
+      All master data and GDST event endpoints are live. Full GDST 1.2 normative compliance gap analysis completed and all 15 identified gaps closed: disposition URNs, URI format validation, bizTransactionList, on-vessel KDE linkage, SSCC logistics units, required EPCIS technical fields (Table W1b), and all Table C1 EPC count rules. Outstanding: authentication/authorization, deployment configuration, and EPCIS 2.0 export.
+    </p>
+  </div>
+
+  <!-- Timeline -->
+  <h2>Development Timeline</h2>
+  <div class="card">
+    <div class="timeline">
+      <div class="tl-item">
+        <div class="date">26 May 2026</div>
+        <div class="desc">Project bootstrapped — HTTP server, structured logging, environment configuration, standard JSON response helpers.</div>
+      </div>
+      <div class="tl-item">
+        <div class="date">27 May 2026</div>
+        <div class="desc">Request/error logging middleware, test infrastructure, Swagger/OpenAPI integration, GitHub Actions CI pipeline (build · test · lint · docs · vuln).</div>
+      </div>
+      <div class="tl-item">
+        <div class="date">28 May 2026</div>
+        <div class="desc">Full GDST 1.2 database schema designed and migrated (20+ tables). Type-safe query layer generated via sqlc. Switched to PostgreSQL exclusively.</div>
+      </div>
+      <div class="tl-item">
+        <div class="date">29 May 2026</div>
+        <div class="desc">All GDST event and master data handlers shipped. Full KDE hydration on GET /events/{id}. Multi-filter event search. biz_step URN validation (Table C1). Ship/receive source &amp; EPC role enforcement.</div>
+      </div>
+      <div class="tl-item">
+        <div class="date">30 May 2026</div>
+        <div class="desc">Full GDST 1.2 compliance gap analysis — 15 gaps identified and closed: disposition auto-set &amp; validation, FAO catch area requirement, bizTransactionList for authorizations, GDST/GS1 URI format validation (EPC/PGLN/SGLN), on-vessel processing vessel linkage, SSCC logistics unit identifier type, required EPCIS technical fields (product owner, information provider, read point per Table W1b), Table C1 EPC count rules for commingling, packaging, aggregation, disaggregation, and general transformation event I/O enforcement. README and project status updated to reflect full compliance posture.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- API Endpoints -->
+  <h2>API Endpoints</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Method</th>
+        <th>Path</th>
+        <th>Description</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="method POST">POST</span></td>
+        <td><code>/parties</code></td>
+        <td>Create a legal entity (fisherman, processor, trader)</td>
+        <td><span class="badge done">Live</span></td>
+      </tr>
+      <tr>
+        <td><span class="method GET">GET</span></td>
+        <td><code>/parties/{id}</code></td>
+        <td>Get a party by UUID</td>
+        <td><span class="badge done">Live</span></td>
+      </tr>
+      <tr>
+        <td><span class="method POST">POST</span></td>
+        <td><code>/locations</code></td>
+        <td>Create a physical location (vessel, farm, port, etc.)</td>
+        <td><span class="badge done">Live</span></td>
+      </tr>
+      <tr>
+        <td><span class="method GET">GET</span></td>
+        <td><code>/locations/{id}</code></td>
+        <td>Get a location by UUID</td>
+        <td><span class="badge done">Live</span></td>
+      </tr>
+      <tr>
+        <td><span class="method POST">POST</span></td>
+        <td><code>/vessels</code></td>
+        <td>Create a vessel with all GDST W2a KDEs (IMO, flag state, registry)</td>
+        <td><span class="badge done">Live</span></td>
+      </tr>
+      <tr>
+        <td><span class="method GET">GET</span></td>
+        <td><code>/vessels/{id}</code></td>
+        <td>Get a vessel by UUID</td>
+        <td><span class="badge done">Live</span></td>
+      </tr>
+      <tr>
+        <td><span class="method POST">POST</span></td>
+        <td><code>/traceable-objects</code></td>
+        <td>Create a product lot/batch (EPC URI, FAO species code, product form)</td>
+        <td><span class="badge done">Live</span></td>
+      </tr>
+      <tr>
+        <td><span class="method GET">GET</span></td>
+        <td><code>/traceable-objects/{id}</code></td>
+        <td>Get a traceable object by UUID</td>
+        <td><span class="badge done">Live</span></td>
+      </tr>
+      <tr>
+        <td><span class="method GET">GET</span></td>
+        <td><code>/traceable-objects/{id}/history</code></td>
+        <td>Full chain-of-custody: all events in which this product appeared</td>
+        <td><span class="badge done">Live</span></td>
+      </tr>
+      <tr>
+        <td><span class="method POST">POST</span></td>
+        <td><code>/certifications</code></td>
+        <td>Create a reusable certification or license record</td>
+        <td><span class="badge done">Live</span></td>
+      </tr>
+      <tr>
+        <td><span class="method GET">GET</span></td>
+        <td><code>/certifications/{id}</code></td>
+        <td>Get a certification by UUID</td>
+        <td><span class="badge done">Live</span></td>
+      </tr>
+      <tr>
+        <td><span class="method POST">POST</span></td>
+        <td><code>/events</code></td>
+        <td>Create a GDST CTE event with full KDE data atomically (all 14 CTE types)</td>
+        <td><span class="badge done">Live</span></td>
+      </tr>
+      <tr>
+        <td><span class="method GET">GET</span></td>
+        <td><code>/events</code></td>
+        <td>Search events — up to 9 combinable filters (CTE, party, location, product, date range, pagination)</td>
+        <td><span class="badge done">Live</span></td>
+      </tr>
+      <tr>
+        <td><span class="method GET">GET</span></td>
+        <td><code>/events/{id}</code></td>
+        <td>Get event with all KDE data fully hydrated (catch areas, certifications, welfare policies, etc.)</td>
+        <td><span class="badge done">Live</span></td>
+      </tr>
+      <tr>
+        <td><span class="method GET">GET</span></td>
+        <td><code>/swagger/</code></td>
+        <td>Interactive API documentation (Swagger UI)</td>
+        <td><span class="badge done">Live</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- GDST CTE Coverage -->
+  <h2>GDST 1.2 Critical Tracking Event Coverage</h2>
+
+  <h3 style="margin-bottom: 12px; color: var(--muted); font-weight:500;">Wild Capture</h3>
+  <div class="cte-grid" style="margin-bottom: 24px;">
+    <div class="cte-item">
+      <strong>Fishing</strong>
+      <span>catch_data, catch_areas, vessel KDEs</span>
+    </div>
+    <div class="cte-item">
+      <strong>Transshipment</strong>
+      <span>Vessel, port or at-sea geo-coordinates</span>
+    </div>
+    <div class="cte-item">
+      <strong>Landing</strong>
+      <span>Unloading port or non-port geo-coordinates</span>
+    </div>
+    <div class="cte-item">
+      <strong>Processing</strong>
+      <span>Expiry date, production date, countries of origin</span>
+    </div>
+    <div class="cte-item">
+      <strong>Packaging</strong>
+      <span>N inputs, 1 output enforced (Table C1)</span>
+    </div>
+    <div class="cte-item">
+      <strong>Ship</strong>
+      <span>Source/destination lists enforced</span>
+    </div>
+    <div class="cte-item">
+      <strong>Receive</strong>
+      <span>Source/destination lists enforced</span>
+    </div>
+    <div class="cte-item">
+      <strong>Commingling</strong>
+      <span>N inputs, 1 output enforced (Table C1)</span>
+    </div>
+    <div class="cte-item">
+      <strong>Aggregation</strong>
+      <span>1 parent, N children enforced (Table C1)</span>
+    </div>
+    <div class="cte-item">
+      <strong>Disaggregation</strong>
+      <span>1 parent, N children enforced (Table C1)</span>
+    </div>
+  </div>
+
+  <h3 style="margin-bottom: 12px; color: var(--muted); font-weight:500;">Aquaculture</h3>
+  <div class="cte-grid">
+    <div class="cte-item">
+      <strong>Farm Harvest</strong>
+      <span>Farming method, farm location KDEs</span>
+    </div>
+    <div class="cte-item">
+      <strong>Hatching</strong>
+      <span>Harvest date per tank, broodstock source</span>
+    </div>
+    <div class="cte-item">
+      <strong>Farm Stocking</strong>
+      <span>biz_step URN validated</span>
+    </div>
+    <div class="cte-item">
+      <strong>Feedmill</strong>
+      <span>Protein source KDE (Aq2b)</span>
+    </div>
+  </div>
+
+  <!-- Database Schema -->
+  <h2>Database Schema (GDST 1.2 EPCIS Model)</h2>
+  <div class="schema-grid">
+    <div class="schema-item"><strong>parties</strong>Legal entities — GS1 PGLN identification</div>
+    <div class="schema-item"><strong>locations</strong>Physical locations — vessels, farms, ports, plants</div>
+    <div class="schema-item"><strong>vessels</strong>Vessel master data — IMO, flag state, registry URL</div>
+    <div class="schema-item"><strong>traceable_objects</strong>Products at lot/batch level and logistics units (SSCC) — EPC URI, species, form, identifier_type</div>
+    <div class="schema-item"><strong>certifications</strong>Reusable cert/license records with issue &amp; expiry dates</div>
+    <div class="schema-item"><strong>events</strong>Core EPCIS CTE event record</div>
+    <div class="schema-item"><strong>event_epc_list</strong>Products per event with role, quantity, UOM</div>
+    <div class="schema-item"><strong>event_sources / event_destinations</strong>EPCIS sourceList &amp; destinationList (ship/receive)</div>
+    <div class="schema-item"><strong>event_biz_transactions</strong>EPCIS bizTransactionList — fishing license, transshipment &amp; landing authorizations</div>
+    <div class="schema-item"><strong>event_certifications</strong>Certs attached to events with contextual role</div>
+    <div class="schema-item"><strong>catch_data + catch_areas</strong>Wild catch KDEs — gear, trip dates, FAO/EEZ/RFMO areas</div>
+    <div class="schema-item"><strong>transshipment_data</strong>Transshipment vessel, port or at-sea geo</div>
+    <div class="schema-item"><strong>landing_data</strong>Unloading port or non-port geo-coordinates</div>
+    <div class="schema-item"><strong>processing_data</strong>Expiry, production date, countries of origin</div>
+    <div class="schema-item"><strong>feed_data</strong>Aquaculture protein source (Aq2b)</div>
+    <div class="schema-item"><strong>hatchery_data</strong>Harvest date per tank, broodstock source (Aq2c)</div>
+    <div class="schema-item"><strong>farm_data</strong>Farming method, farm location (Aq2d)</div>
+    <div class="schema-item"><strong>human_welfare_policies</strong>Policy standards &amp; existence (W2f/Aq2f)</div>
+  </div>
+
+  <!-- Features completed -->
+  <h2>Completed Features</h2>
+  <div class="feature-grid">
+    <div class="feature-item">
+      <div class="icon done">✓</div>
+      <div class="text">
+        <h4>biz_step URN Validation</h4>
+        <p>Every event is validated against the GDST Table C1 URN map before persistence.</p>
+      </div>
+    </div>
+    <div class="feature-item">
+      <div class="icon done">✓</div>
+      <div class="text">
+        <h4>Ship/Receive Constraint Enforcement</h4>
+        <p>Source and destination lists are required on ship and receive events; blocked on other CTEs.</p>
+      </div>
+    </div>
+    <div class="feature-item">
+      <div class="icon done">✓</div>
+      <div class="text">
+        <h4>EPC Role Validation</h4>
+        <p>Transformation and aggregation CTEs enforce correct input/output/parent/child EPC roles.</p>
+      </div>
+    </div>
+    <div class="feature-item">
+      <div class="icon done">✓</div>
+      <div class="text">
+        <h4>Full KDE Hydration on GET</h4>
+        <p>GET /events/{id} returns the event with all linked KDE sub-tables fully populated.</p>
+      </div>
+    </div>
+    <div class="feature-item">
+      <div class="icon done">✓</div>
+      <div class="text">
+        <h4>Multi-Filter Event Search</h4>
+        <p>Up to 9 independent filters on GET /events — CTE, party, location, product, date range, pagination.</p>
+      </div>
+    </div>
+    <div class="feature-item">
+      <div class="icon done">✓</div>
+      <div class="text">
+        <h4>Chain-of-Custody History</h4>
+        <p>GET /traceable-objects/{id}/history returns all events in which a product lot appeared.</p>
+      </div>
+    </div>
+    <div class="feature-item">
+      <div class="icon done">✓</div>
+      <div class="text">
+        <h4>Atomic Event Creation</h4>
+        <p>All KDEs (catch areas, certifications, welfare policies, EPC list) are written in a single transaction.</p>
+      </div>
+    </div>
+    <div class="feature-item">
+      <div class="icon done">✓</div>
+      <div class="text">
+        <h4>Swagger / OpenAPI Docs</h4>
+        <p>Interactive documentation auto-generated from handler annotations, served at /swagger/.</p>
+      </div>
+    </div>
+    <div class="feature-item">
+      <div class="icon done">✓</div>
+      <div class="text">
+        <h4>Auto-Migrating Database</h4>
+        <p>Goose migrations are embedded in the binary and applied automatically on startup.</p>
+      </div>
+    </div>
+    <div class="feature-item">
+      <div class="icon done">✓</div>
+      <div class="text">
+        <h4>Structured Logging &amp; Middleware</h4>
+        <p>slog-based structured logging; request/response and panic-recovery middleware.</p>
+      </div>
+    </div>
+    <div class="feature-item">
+      <div class="icon done">✓</div>
+      <div class="text">
+        <h4>Disposition Auto-Set &amp; Validation</h4>
+        <p>Disposition is automatically set to the Table C1 URN for each CTE; explicit values conflicting with the spec are rejected.</p>
+      </div>
+    </div>
+    <div class="feature-item">
+      <div class="icon done">✓</div>
+      <div class="text">
+        <h4>GDST / GS1 URI Format Validation</h4>
+        <p>EPC URIs (LGTIN, SSCC, GDST URN), party identifiers (PGLN), and location identifiers (SGLN) are validated on creation against Section 3 formats.</p>
+      </div>
+    </div>
+    <div class="feature-item">
+      <div class="icon done">✓</div>
+      <div class="text">
+        <h4>bizTransactionList for Authorizations</h4>
+        <p>Events support EPCIS bizTransactionList as an alternative to certificationList for fishing, transshipment, and landing authorization documents (Tables W2f, Aq2f).</p>
+      </div>
+    </div>
+    <div class="feature-item">
+      <div class="icon done">✓</div>
+      <div class="text">
+        <h4>On-Vessel Processing Vessel Linkage</h4>
+        <p>GET /events/{id} auto-hydrates Table W2a vessel KDEs when the event read point is a vessel location — surfaces IMO number, flag state, registry URL inline.</p>
+      </div>
+    </div>
+    <div class="feature-item">
+      <div class="icon done">✓</div>
+      <div class="text">
+        <h4>SSCC Logistics Unit Identification</h4>
+        <p>Traceable objects carry an <code>identifier_type</code> field — auto-set to <code>logistics_unit</code> for SSCC URIs and <code>product_lot</code> for all others (Section 3.2).</p>
+      </div>
+    </div>
+    <div class="feature-item">
+      <div class="icon done">✓</div>
+      <div class="text">
+        <h4>Required EPCIS Technical Fields</h4>
+        <p><code>product_owner_id</code>, <code>information_provider_id</code>, and <code>read_point</code> are enforced as required on every event per GDST Table W1b.</p>
+      </div>
+    </div>
+    <div class="feature-item">
+      <div class="icon done">✓</div>
+      <div class="text">
+        <h4>Table C1 EPC Count Rules</h4>
+        <p>Commingling and packaging require N inputs + 1 output; aggregation and disaggregation require 1 parent + N children; all transformation events require ≥1 input and ≥1 output.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- CI/CD -->
+  <h2>CI / CD Pipeline</h2>
+  <div class="ci-grid">
+    <div class="ci-item">
+      <div class="ci-icon">🔨</div>
+      <div class="ci-label">Build</div>
+      <div class="ci-cmd">make build</div>
+      <div style="margin-top:6px"><span class="badge done">Passing</span></div>
+    </div>
+    <div class="ci-item">
+      <div class="ci-icon">🧪</div>
+      <div class="ci-label">Tests</div>
+      <div class="ci-cmd">make test</div>
+      <div style="margin-top:6px"><span class="badge done">Passing</span></div>
+    </div>
+    <div class="ci-item">
+      <div class="ci-icon">🔍</div>
+      <div class="ci-label">Lint</div>
+      <div class="ci-cmd">make lint</div>
+      <div style="margin-top:6px"><span class="badge done">Passing</span></div>
+    </div>
+    <div class="ci-item">
+      <div class="ci-icon">📄</div>
+      <div class="ci-label">Swagger Docs</div>
+      <div class="ci-cmd">make docs</div>
+      <div style="margin-top:6px"><span class="badge done">Passing</span></div>
+    </div>
+    <div class="ci-item">
+      <div class="ci-icon">🗄</div>
+      <div class="ci-label">sqlc Check</div>
+      <div class="ci-cmd">make sqlc</div>
+      <div style="margin-top:6px"><span class="badge done">Passing</span></div>
+    </div>
+    <div class="ci-item">
+      <div class="ci-icon">🛡</div>
+      <div class="ci-label">Vuln Scan</div>
+      <div class="ci-cmd">make vuln</div>
+      <div style="margin-top:6px"><span class="badge done">Passing</span></div>
+    </div>
+  </div>
+
+  <!-- Tech Stack -->
+  <h2>Technology Stack</h2>
+  <div class="card">
+    <div class="tech-pills">
+      <span class="pill">Go 1.26+</span>
+      <span class="pill">net/http (stdlib)</span>
+      <span class="pill">PostgreSQL 13+</span>
+      <span class="pill">pgx/v5</span>
+      <span class="pill">sqlc</span>
+      <span class="pill">goose (migrations)</span>
+      <span class="pill">swag (OpenAPI)</span>
+      <span class="pill">golangci-lint</span>
+      <span class="pill">govulncheck</span>
+      <span class="pill">GitHub Actions</span>
+      <span class="pill">slog</span>
+    </div>
+  </div>
+
+  <!-- Next Steps -->
+  <h2>Suggested Next Steps</h2>
+  <ul class="next-list">
+    <li>
+      <span class="num">1</span>
+      <div>
+        <strong>Authentication &amp; Authorization</strong> — API key or JWT middleware; per-party access scoping so information providers can only read/write their own events.
+      </div>
+    </li>
+    <li>
+      <span class="num">2</span>
+      <div>
+        <strong>Deployment Configuration</strong> — Dockerfile and/or Kubernetes manifests; environment-specific configuration for staging and production; database provisioning automation.
+      </div>
+    </li>
+    <li>
+      <span class="num">3</span>
+      <div>
+        <strong>EPCIS 2.0 / GS1 Export</strong> — Serialise stored events as standard EPCIS 2.0 XML or JSON-LD so data can be shared with external supply-chain platforms and comply with digital transfer requirements.
+      </div>
+    </li>
+    <li>
+      <span class="num">4</span>
+      <div>
+        <strong>List Endpoints for Master Data</strong> — Paginated GET /parties, GET /vessels, GET /locations to support front-end UIs and reporting dashboards.
+      </div>
+    </li>
+    <li>
+      <span class="num">5</span>
+      <div>
+        <strong>Integration / E2E Tests</strong> — Tests that exercise full request flows against a real database to complement the existing unit test layer.
+      </div>
+    </li>
+    <li>
+      <span class="num">6</span>
+      <div>
+        <strong>FAO Catch Area Code Validation</strong> — Validate that <code>area_code</code> values in catch areas are legitimate FAO, EEZ, or RFMO codes against published reference lists.
+      </div>
+    </li>
+    <li>
+      <span class="num">7</span>
+      <div>
+        <strong>Customer Integration Inbound Adapter</strong> — An API endpoint (or webhook receiver) that accepts events in a customer's native format and maps them to GDST 1.2 EPCIS structure automatically. Would include a field-mapping layer, CTE type inference, and a dry-run validation mode so customers can test their data before committing it.
+      </div>
+    </li>
+    <li>
+      <span class="num">8</span>
+      <div>
+        <strong>Operational Alerting (Slack / Discord)</strong> — Push structured notifications for key events (event creation, validation failures, inbound integration errors) to a Slack or Discord webhook. Useful for supply-chain operations teams monitoring data quality in real time without needing to tail logs.
+      </div>
+    </li>
+  </ul>
+
+</main>
+
+</body>
+</html>
